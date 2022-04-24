@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import subprocess
 import sys
 
 
@@ -28,8 +29,7 @@ class SystemShutdownActor:
         return False
 
     def __call_command(self, *command):
-        pass
-
+        return subprocess.call(command)
 
     @nofail
     def _via_sysrq(self, emergency=False):

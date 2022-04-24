@@ -4,6 +4,18 @@ import os
 import sys
 
 
+def nofail(func):
+    def decorated_func(*args, **kvargs):
+        try:
+            func(*args, **kvargs)
+            return True
+        except Exception as e:
+            print(e)
+            return False
+    return decorated_func
+
+
+
 class SystemShutdownActor:
 
     def __init__(self):
@@ -19,10 +31,11 @@ class SystemShutdownActor:
         pass
 
 
+    @nofail
     def _via_sysrq(self, emergency=False):
-        
         pass
 
+    @nofail
     def _via_cmd_shutdown(self, emergency=False):
         if emergency: return False
         self.__call_command("shutdown", "-h", "now")

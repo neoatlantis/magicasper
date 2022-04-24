@@ -22,24 +22,41 @@ class SystemShutdownActor:
     def __init__(self):
         pass
 
-    def __send_sysrq(self, signal):
-        if os.path.isfile("/proc/sysrq-trigger"):
-            self.__write_file("/proc/sysrq-trigger", signal)
-            return True
-        return False
+    def __call_command(self, *command, **kvargs):
+        return subprocess.call(command, **kvargs)
 
-    def __call_command(self, *command):
-        return subprocess.call(command)
 
     @nofail
     def _via_sysrq(self, emergency=False):
-        pass
+        # Enable SysRq poweroff
+        open("/proc/sys/kernel/sysrq", "w").write("128")
+        # Trigger SysRQ
+        if emergency:
+            command_series = ""
+        else:
+            command_series = "s"
+        command_series += "o"
+        for s in command_series:
+            open("/proc/sysrq-trigger", "w").write(s)
 
     @nofail
     def _via_cmd_shutdown(self, emergency=False):
-        if emergency: return False
         self.__call_command("shutdown", "-h", "now")
-        return True
+
+    @nofail
+    def _via_cmd_systemctl(self, emergency=False):
+        self.__call_command("systemctl", "poweroff")
+
+    @nofail
+    def _via_cmd_poweroff(self, emergency=False):
+        self.__call_command("poweroff")
 
     def __call__(self, emergency=False):
-        self._via_cmd_shutdown(emergency=emergency)
+        if emergency:
+            # priority
+            self._via_sysrq(True)
+        #self._via_cmd_shutdown(emergency=emergency)
+        #self._via_cmd_systemctl(emergency=emergency)
+        #self._via_cmd_poweroff(emergency=emergency)
+
+        self._via_sysrq(False) # Try shutdown via SysRQ anyway

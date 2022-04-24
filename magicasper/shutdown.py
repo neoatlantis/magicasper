@@ -29,5 +29,4 @@ class SystemShutdownActor:
         return True
 
     def __call__(self, emergency=False):
-        if not emergency:
-            pass
+        self._via_cmd_shutdown(emergency=emergency)
